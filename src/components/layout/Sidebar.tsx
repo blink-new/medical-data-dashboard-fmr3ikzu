@@ -20,7 +20,7 @@ const getStatusColor = (status: Case['overallStatus']) => {
     case 'error':
       return 'bg-red-500/10 text-red-600 border-red-500/20';
     default:
-      return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
+      return 'bg-muted text-muted-foreground border-border';
   }
 };
 

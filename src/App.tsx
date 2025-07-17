@@ -4,9 +4,12 @@ import { mockCases } from './data/mockData';
 import { Sidebar } from './components/layout/Sidebar';
 import { ProviderSelector } from './components/dashboard/ProviderSelector';
 import { WorkflowTabs } from './components/dashboard/WorkflowTabs';
-import { FileText } from 'lucide-react';
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+import { Button } from './components/ui/button';
+import { FileText, Moon, Sun } from 'lucide-react';
 
-function App() {
+function AppContent() {
+  const { theme, toggleTheme } = useTheme();
   const [cases, setCases] = useState<Case[]>(mockCases);
   const [selectedCase, setSelectedCase] = useState<Case | null>(mockCases[0]);
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(
@@ -111,7 +114,7 @@ function App() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-background">
       {/* Sidebar */}
       <Sidebar
         cases={cases}
@@ -125,14 +128,32 @@ function App() {
         {selectedCase ? (
           <div className="h-full overflow-y-auto">
             <div className="max-w-8xl mx-auto p-6 space-y-6">
+              {/* Header with Theme Toggle */}
+              <div className="flex items-center justify-between">
+                <div></div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={toggleTheme}
+                  className="font-inter"
+                >
+                  {theme === 'light' ? (
+                    <Moon className="w-4 h-4 mr-2" />
+                  ) : (
+                    <Sun className="w-4 h-4 mr-2" />
+                  )}
+                  {theme === 'light' ? 'Dark' : 'Light'} Mode
+                </Button>
+              </div>
+
               {/* Case Header */}
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <div className="bg-card border border-border rounded-lg p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h1 className="font-canela text-3xl font-medium text-gray-900 mb-2">
+                    <h1 className="font-canela text-3xl font-medium text-foreground mb-2">
                       {selectedCase.name}
                     </h1>
-                    <div className="flex items-center gap-4 text-sm text-gray-600 font-inter">
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground font-inter">
                       <span>Created {new Date(selectedCase.createdAt).toLocaleDateString()}</span>
                       <span>•</span>
                       <span>Last updated {new Date(selectedCase.updatedAt).toLocaleDateString()}</span>
@@ -163,13 +184,13 @@ function App() {
         ) : (
           <div className="h-full flex items-center justify-center">
             <div className="text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FileText className="w-8 h-8 text-gray-400" />
+              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                <FileText className="w-8 h-8 text-muted-foreground" />
               </div>
-              <h2 className="font-canela text-xl font-medium text-gray-900 mb-2">
+              <h2 className="font-canela text-xl font-medium text-foreground mb-2">
                 No case selected
               </h2>
-              <p className="text-gray-600 font-inter">
+              <p className="text-muted-foreground font-inter">
                 Select a case from the sidebar to get started
               </p>
             </div>
@@ -177,6 +198,14 @@ function App() {
         )}
       </div>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }
 

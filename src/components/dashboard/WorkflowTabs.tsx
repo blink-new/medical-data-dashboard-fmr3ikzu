@@ -2,6 +2,7 @@ import { Provider, WorkflowStep } from '../../types/medical';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { 
   FileText, 
   Search, 
@@ -11,7 +12,10 @@ import {
   Play,
   CheckCircle,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Download,
+  Eye,
+  AlertTriangle
 } from 'lucide-react';
 
 interface WorkflowTabsProps {
@@ -61,7 +65,7 @@ const getStatusIcon = (status: string) => {
     case 'error':
       return <AlertCircle className="w-4 h-4 text-red-600" />;
     default:
-      return <div className="w-4 h-4 rounded-full border-2 border-gray-300" />;
+      return <div className="w-4 h-4 rounded-full border-2 border-muted-foreground" />;
   }
 };
 
@@ -74,21 +78,21 @@ const getStatusColor = (status: string) => {
     case 'error':
       return 'bg-red-500/10 text-red-600 border-red-500/20';
     default:
-      return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
+      return 'bg-muted text-muted-foreground border-border';
   }
 };
 
 export function WorkflowTabs({ provider, onRunStep }: WorkflowTabsProps) {
   return (
-    <div className="bg-white border border-gray-200 rounded-lg">
+    <div className="bg-card border border-border rounded-lg">
       {/* Header */}
-      <div className="p-6 border-b border-gray-200">
+      <div className="p-6 border-b border-border">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="font-canela text-2xl font-medium text-gray-900 mb-1">
+            <h2 className="font-canela text-2xl font-medium text-foreground mb-1">
               Workflow Processing
             </h2>
-            <p className="text-sm text-gray-600 font-inter">
+            <p className="text-sm text-muted-foreground font-inter">
               {provider.name} • ZIP {provider.zipCode} • 18.01 Date: {provider.date1801}
             </p>
           </div>
@@ -97,7 +101,7 @@ export function WorkflowTabs({ provider, onRunStep }: WorkflowTabsProps) {
 
       {/* Workflow Steps */}
       <Tabs defaultValue="extraction" className="w-full">
-        <TabsList className="w-full justify-start p-6 bg-transparent border-b border-gray-200 rounded-none h-auto">
+        <TabsList className="w-full justify-start p-6 bg-transparent border-b border-border rounded-none h-auto">
           {workflowSteps.map((step) => {
             const status = provider.status[step.key];
             const Icon = step.icon;
@@ -126,14 +130,14 @@ export function WorkflowTabs({ provider, onRunStep }: WorkflowTabsProps) {
                 {/* Step Header */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <Icon className="w-6 h-6 text-gray-600" />
+                    <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
+                      <Icon className="w-6 h-6 text-muted-foreground" />
                     </div>
                     <div>
-                      <h3 className="font-canela text-xl font-medium text-gray-900">
+                      <h3 className="font-canela text-xl font-medium text-foreground">
                         {step.label}
                       </h3>
-                      <p className="text-sm text-gray-600 font-inter">
+                      <p className="text-sm text-muted-foreground font-inter">
                         {step.description}
                       </p>
                     </div>
@@ -159,27 +163,64 @@ export function WorkflowTabs({ provider, onRunStep }: WorkflowTabsProps) {
                 </div>
 
                 {/* Step Content */}
-                <div className="bg-gray-50 rounded-lg p-6">
+                <div className="bg-muted/50 rounded-lg p-6">
                   {step.key === 'extraction' && (
                     <div>
-                      <h4 className="font-inter font-semibold text-gray-900 mb-3">
-                        Data Extraction Status
+                      <h4 className="font-inter font-semibold text-foreground mb-4">
+                        Data Extraction Results
                       </h4>
                       {status === 'completed' ? (
-                        <div className="space-y-2">
-                          <p className="text-sm text-gray-600 font-inter">
-                            ✓ Successfully extracted {provider.lineItems.length} line items
-                          </p>
-                          <p className="text-sm text-gray-600 font-inter">
-                            ✓ Provider information validated
-                          </p>
-                          <p className="text-sm text-gray-600 font-inter">
-                            ✓ 18.01 date confirmed: {provider.date1801}
-                          </p>
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div className="bg-card p-4 rounded-lg border border-border">
+                              <div className="text-2xl font-bold text-foreground">{provider.lineItems.length}</div>
+                              <div className="text-sm text-muted-foreground font-inter">Line Items Extracted</div>
+                            </div>
+                            <div className="bg-card p-4 rounded-lg border border-border">
+                              <div className="text-2xl font-bold text-foreground">
+                                ${provider.lineItems.reduce((sum, item) => sum + item.amount, 0).toFixed(2)}
+                              </div>
+                              <div className="text-sm text-muted-foreground font-inter">Total Amount</div>
+                            </div>
+                            <div className="bg-card p-4 rounded-lg border border-border">
+                              <div className="text-2xl font-bold text-green-600">✓</div>
+                              <div className="text-sm text-muted-foreground font-inter">Provider Validated</div>
+                            </div>
+                          </div>
+                          
+                          {provider.lineItems.length > 0 && (
+                            <div>
+                              <h5 className="font-inter font-medium text-foreground mb-3">Extracted Line Items</h5>
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead className="font-inter">Description</TableHead>
+                                    <TableHead className="font-inter">Units</TableHead>
+                                    <TableHead className="font-inter">Amount</TableHead>
+                                    <TableHead className="font-inter">Status</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {provider.lineItems.map((item) => (
+                                    <TableRow key={item.id}>
+                                      <TableCell className="font-inter">{item.description}</TableCell>
+                                      <TableCell className="font-inter">{item.units}</TableCell>
+                                      <TableCell className="font-inter">${item.amount.toFixed(2)}</TableCell>
+                                      <TableCell>
+                                        <Badge variant="outline" className={`font-inter ${getStatusColor(item.status)}`}>
+                                          {item.status}
+                                        </Badge>
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            </div>
+                          )}
                         </div>
                       ) : (
-                        <p className="text-sm text-gray-600 font-inter">
-                          Ready to extract medical data from source documents
+                        <p className="text-sm text-muted-foreground font-inter">
+                          Ready to extract medical data from source documents. This process will identify procedures, diagnoses, and billing information.
                         </p>
                       )}
                     </div>
@@ -187,23 +228,56 @@ export function WorkflowTabs({ provider, onRunStep }: WorkflowTabsProps) {
 
                   {step.key === 'cptMatching' && (
                     <div>
-                      <h4 className="font-inter font-semibold text-gray-900 mb-3">
-                        CPT Code Matching
+                      <h4 className="font-inter font-semibold text-foreground mb-4">
+                        CPT Code Matching Results
                       </h4>
                       {status === 'completed' ? (
-                        <div className="space-y-2">
-                          {provider.lineItems.map((item) => (
-                            <div key={item.id} className="flex justify-between items-center text-sm">
-                              <span className="font-inter text-gray-600">{item.description}</span>
-                              <Badge variant="outline" className="font-inter">
-                                {item.cptCode}
-                              </Badge>
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div className="bg-card p-4 rounded-lg border border-border">
+                              <div className="text-2xl font-bold text-green-600">
+                                {provider.lineItems.filter(item => item.cptCode).length}
+                              </div>
+                              <div className="text-sm text-muted-foreground font-inter">CPT Codes Matched</div>
                             </div>
-                          ))}
+                            <div className="bg-card p-4 rounded-lg border border-border">
+                              <div className="text-2xl font-bold text-foreground">100%</div>
+                              <div className="text-sm text-muted-foreground font-inter">Match Accuracy</div>
+                            </div>
+                          </div>
+                          
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead className="font-inter">CPT Code</TableHead>
+                                <TableHead className="font-inter">Description</TableHead>
+                                <TableHead className="font-inter">Amount</TableHead>
+                                <TableHead className="font-inter">Status</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {provider.lineItems.map((item) => (
+                                <TableRow key={item.id}>
+                                  <TableCell>
+                                    <Badge variant="outline" className="font-inter font-mono">
+                                      {item.cptCode}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell className="font-inter">{item.description}</TableCell>
+                                  <TableCell className="font-inter">${item.amount.toFixed(2)}</TableCell>
+                                  <TableCell>
+                                    <Badge variant="outline" className={`font-inter ${getStatusColor(item.status)}`}>
+                                      {item.status}
+                                    </Badge>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
                         </div>
                       ) : (
-                        <p className="text-sm text-gray-600 font-inter">
-                          Match extracted procedures to appropriate CPT codes
+                        <p className="text-sm text-muted-foreground font-inter">
+                          Match extracted procedures to appropriate CPT codes using the latest AMA CPT code database.
                         </p>
                       )}
                     </div>
@@ -211,34 +285,205 @@ export function WorkflowTabs({ provider, onRunStep }: WorkflowTabsProps) {
 
                   {step.key === 'ncciEdits' && (
                     <div>
-                      <h4 className="font-inter font-semibold text-gray-900 mb-3">
+                      <h4 className="font-inter font-semibold text-foreground mb-4">
                         NCCI Edit Validation
                       </h4>
-                      <p className="text-sm text-gray-600 font-inter">
-                        Validate procedure combinations against NCCI edit rules
-                      </p>
+                      {status === 'completed' ? (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div className="bg-card p-4 rounded-lg border border-border">
+                              <div className="text-2xl font-bold text-green-600">
+                                {provider.lineItems.filter(item => !item.ncciEdits || item.ncciEdits.length === 0).length}
+                              </div>
+                              <div className="text-sm text-muted-foreground font-inter">Clean Claims</div>
+                            </div>
+                            <div className="bg-card p-4 rounded-lg border border-border">
+                              <div className="text-2xl font-bold text-red-600">
+                                {provider.lineItems.filter(item => item.ncciEdits && item.ncciEdits.length > 0).length}
+                              </div>
+                              <div className="text-sm text-muted-foreground font-inter">Edit Conflicts</div>
+                            </div>
+                            <div className="bg-card p-4 rounded-lg border border-border">
+                              <div className="text-2xl font-bold text-foreground">
+                                {Math.round((provider.lineItems.filter(item => !item.ncciEdits || item.ncciEdits.length === 0).length / provider.lineItems.length) * 100)}%
+                              </div>
+                              <div className="text-sm text-muted-foreground font-inter">Pass Rate</div>
+                            </div>
+                          </div>
+                          
+                          {provider.lineItems.some(item => item.ncciEdits && item.ncciEdits.length > 0) && (
+                            <div>
+                              <h5 className="font-inter font-medium text-foreground mb-3 flex items-center gap-2">
+                                <AlertTriangle className="w-4 h-4 text-red-600" />
+                                NCCI Edit Conflicts
+                              </h5>
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead className="font-inter">CPT Code</TableHead>
+                                    <TableHead className="font-inter">Description</TableHead>
+                                    <TableHead className="font-inter">Edit Conflicts</TableHead>
+                                    <TableHead className="font-inter">Status</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {provider.lineItems
+                                    .filter(item => item.ncciEdits && item.ncciEdits.length > 0)
+                                    .map((item) => (
+                                    <TableRow key={item.id}>
+                                      <TableCell>
+                                        <Badge variant="outline" className="font-inter font-mono">
+                                          {item.cptCode}
+                                        </Badge>
+                                      </TableCell>
+                                      <TableCell className="font-inter">{item.description}</TableCell>
+                                      <TableCell>
+                                        <div className="space-y-1">
+                                          {item.ncciEdits?.map((edit, index) => (
+                                            <Badge key={index} variant="destructive" className="font-inter text-xs">
+                                              {edit}
+                                            </Badge>
+                                          ))}
+                                        </div>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Badge variant="outline" className={`font-inter ${getStatusColor(item.status)}`}>
+                                          {item.status}
+                                        </Badge>
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            </div>
+                          )}
+                        </div>
+                      ) : status === 'error' ? (
+                        <div className="space-y-4">
+                          <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                            <div className="flex items-center gap-2 text-red-600 mb-2">
+                              <AlertCircle className="w-4 h-4" />
+                              <span className="font-inter font-medium">NCCI Edit Conflicts Detected</span>
+                            </div>
+                            <p className="text-sm text-red-600 font-inter">
+                              Multiple bundling conflicts found. Manual review required.
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground font-inter">
+                          Validate procedure combinations against NCCI edit rules to identify bundling conflicts and modifier requirements.
+                        </p>
+                      )}
                     </div>
                   )}
 
                   {step.key === 'ucrPulling' && (
                     <div>
-                      <h4 className="font-inter font-semibold text-gray-900 mb-3">
-                        UCR Rate Pulling
+                      <h4 className="font-inter font-semibold text-foreground mb-4">
+                        UCR Rate Analysis
                       </h4>
-                      <p className="text-sm text-gray-600 font-inter">
-                        Pull usual, customary, and reasonable rates for ZIP code {provider.zipCode}
-                      </p>
+                      {status === 'completed' ? (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div className="bg-card p-4 rounded-lg border border-border">
+                              <div className="text-2xl font-bold text-foreground">
+                                ${provider.lineItems.reduce((sum, item) => sum + (item.ucrAmount || 0), 0).toFixed(2)}
+                              </div>
+                              <div className="text-sm text-muted-foreground font-inter">Total UCR Amount</div>
+                            </div>
+                            <div className="bg-card p-4 rounded-lg border border-border">
+                              <div className="text-2xl font-bold text-green-600">
+                                +${(provider.lineItems.reduce((sum, item) => sum + (item.ucrAmount || 0), 0) - 
+                                   provider.lineItems.reduce((sum, item) => sum + item.amount, 0)).toFixed(2)}
+                              </div>
+                              <div className="text-sm text-muted-foreground font-inter">UCR Uplift</div>
+                            </div>
+                            <div className="bg-card p-4 rounded-lg border border-border">
+                              <div className="text-2xl font-bold text-foreground">{provider.zipCode}</div>
+                              <div className="text-sm text-muted-foreground font-inter">ZIP Code</div>
+                            </div>
+                          </div>
+                          
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead className="font-inter">CPT Code</TableHead>
+                                <TableHead className="font-inter">Billed Amount</TableHead>
+                                <TableHead className="font-inter">UCR Amount</TableHead>
+                                <TableHead className="font-inter">Difference</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {provider.lineItems.map((item) => (
+                                <TableRow key={item.id}>
+                                  <TableCell>
+                                    <Badge variant="outline" className="font-inter font-mono">
+                                      {item.cptCode}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell className="font-inter">${item.amount.toFixed(2)}</TableCell>
+                                  <TableCell className="font-inter">
+                                    {item.ucrAmount ? `$${item.ucrAmount.toFixed(2)}` : 'Pending'}
+                                  </TableCell>
+                                  <TableCell className="font-inter">
+                                    {item.ucrAmount ? (
+                                      <span className={item.ucrAmount > item.amount ? 'text-green-600' : 'text-red-600'}>
+                                        ${(item.ucrAmount - item.amount).toFixed(2)}
+                                      </span>
+                                    ) : '-'}
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground font-inter">
+                          Pull usual, customary, and reasonable rates for ZIP code {provider.zipCode} to establish fair market pricing.
+                        </p>
+                      )}
                     </div>
                   )}
 
                   {step.key === 'excelGeneration' && (
                     <div>
-                      <h4 className="font-inter font-semibold text-gray-900 mb-3">
+                      <h4 className="font-inter font-semibold text-foreground mb-4">
                         Report Generation
                       </h4>
-                      <p className="text-sm text-gray-600 font-inter">
-                        Generate Excel reports and counter affidavit documents
-                      </p>
+                      {status === 'completed' ? (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div className="bg-card p-4 rounded-lg border border-border">
+                              <div className="text-2xl font-bold text-green-600">✓</div>
+                              <div className="text-sm text-muted-foreground font-inter">Excel Report Generated</div>
+                            </div>
+                            <div className="bg-card p-4 rounded-lg border border-border">
+                              <div className="text-2xl font-bold text-green-600">✓</div>
+                              <div className="text-sm text-muted-foreground font-inter">Counter Affidavit Ready</div>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-3">
+                            <Button variant="outline" className="w-full justify-start font-inter">
+                              <Download className="w-4 h-4 mr-2" />
+                              Download Excel Report
+                            </Button>
+                            <Button variant="outline" className="w-full justify-start font-inter">
+                              <Download className="w-4 h-4 mr-2" />
+                              Download Counter Affidavit
+                            </Button>
+                            <Button variant="outline" className="w-full justify-start font-inter">
+                              <Eye className="w-4 h-4 mr-2" />
+                              Preview Summary Report
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground font-inter">
+                          Generate comprehensive Excel reports and counter affidavit documents for submission.
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
